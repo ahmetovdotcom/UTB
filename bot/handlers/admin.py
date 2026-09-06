@@ -40,7 +40,8 @@ async def admin_approve_user(callback: CallbackQuery, bot: Bot):
     await bot.send_message(
         chat_id=telegram_id,
         text="🎉 **Поздравляем! Администратор одобрил вашу заявку.**\n\n"
-             "Теперь вы можете управлять расписанием своей группы через меню.",
+             "Теперь вы можете управлять расписанием своей группы через меню.\n" \
+             "Нажмите /start",
         parse_mode="Markdown"
     )
 
