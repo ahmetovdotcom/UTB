@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 1. База данных PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: utb2_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-schedule_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Сервис Бэкенда
+  backend:
+    build: ./backend
+    container_name: utb2_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+
+  # 3. Сервис Телеграм-бота
+  bot:
+    build: ./bot
+    container_name: utb2_bot
+    restart: always
+    depends_on:
+      - backend
+    env_file:
+      - ./bot/.env
+
+  # 4. Сервис Фронтенда (Vue + Nginx)
+  frontend:
+    build: ./frontend
+    container_name: utb2_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
