@@ -50,7 +50,8 @@ async def process_day_selection(callback: CallbackQuery, state: FSMContext):
         "`Время; Название предмета; Кабинет`\n\n"
         "Пример:\n"
         "`08:30-09:50; Высшая математика; 402`\n"
-        "`10:00-11:20; Базы данных; 310`",
+        "`10:00-11:20; Базы данных; 310`\n\n"
+        "❌ **Чтобы полностью удалить расписание на этот день**, отправьте символ `-` (минус).",
         parse_mode="Markdown"
     )
     await state.set_state(ScheduleStates.waiting_for_text)
@@ -59,17 +60,43 @@ async def process_day_selection(callback: CallbackQuery, state: FSMContext):
 @router.message(ScheduleStates.waiting_for_text)
 async def process_schedule_text(message: Message, state: FSMContext):
     raw_text = message.text.strip()
+    data = await state.get_data()
+    group_id = data["group_id"]
+    day_num = data["selected_day"]
+
+    # -------------------------------------------------------------
+    # ЛОГИКА УДАЛЕНИЯ РАСПИСАНИЯ ПРИ ВВОДЕ "-"
+    # -------------------------------------------------------------
+    if raw_text == "-":
+        success = await api_client.delete_schedule(
+            group_id=group_id,
+            day_of_week=day_num,
+            telegram_id=message.from_user.id
+        )
+
+        if success:
+            await message.answer(
+                f"🗑 Расписание на **{DAYS[day_num]}** успешно полностью удалено!",
+                parse_mode="Markdown"
+            )
+            await state.clear()
+        else:
+            await message.answer("❌ Ошибка при удалении расписания на сервере.")
+        return
+
+    # -------------------------------------------------------------
+    # ЛОГИКА СОХРАНЕНИЯ НОВОГО РАСПИСАНИЯ
+    # -------------------------------------------------------------
     lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
-    
     parsed_lessons = []
     
-    # Парсинг строки
     for line in lines:
         parts = [p.strip() for p in line.split(";")]
         if len(parts) != 3:
             await message.answer(
                 f"⚠️ **Ошибка в строке:** `{line}`\n\n"
-                "Формат должен быть строго: `Время; Предмет; Кабинет`",
+                "Формат должен быть строго: `Время; Предмет; Кабинет`\n"
+                "Или отправьте `-` для удаления расписания.",
                 parse_mode="Markdown"
             )
             return
@@ -80,11 +107,7 @@ async def process_schedule_text(message: Message, state: FSMContext):
             "room": parts[2]
         })
 
-    data = await state.get_data()
-    group_id = data["group_id"]
-    day_num = data["selected_day"]
-
-    # Отправка в FastAPI
+    # Отправка в FastAPI для обновления
     success = await api_client.update_schedule(
         group_id=group_id,
         day_of_week=day_num,

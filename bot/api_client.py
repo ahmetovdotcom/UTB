@@ -72,9 +72,25 @@ class APIClient:
         res = await self.client.delete(f"/users/{telegram_id}")
         return res.status_code in (200, 204)
 
+    async def delete_schedule(self, group_id: int, day_of_week: int, telegram_id: int) -> bool:
+        """Удаление расписания группы на выбранный день"""
+        try:
+            res = await self.client.delete(
+                f"/schedules/{group_id}/day/{day_of_week}",
+                params={"telegram_id": telegram_id}
+            )
+            return res.status_code in (200, 204)
+        except Exception as e:
+            print(f"Ошибка при удалении расписания: {e}")
+            return False
+
     async def close(self):
         """Закрытие сессии при остановке бота"""
         await self.client.aclose()
+
+
+
+    
 
 
 api_client = APIClient()
