@@ -80,7 +80,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const icloudShortcutUrl = 'https://www.icloud.com/shortcuts/5e91cd66fbf6432eb3d99b2ed3b32d72'
+const icloudShortcutUrl = 'https://www.icloud.com/shortcuts/fa3e2591f96d4e68a0bc75b437a28a65'
 
 const groupId = ref('')
 
