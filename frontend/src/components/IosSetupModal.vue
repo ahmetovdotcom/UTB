@@ -80,7 +80,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const icloudShortcutUrl = 'https://www.icloud.com/shortcuts/1ef800058dcf4e41a6418405afc428e9'
+const icloudShortcutUrl = 'https://www.icloud.com/shortcuts/5e91cd66fbf6432eb3d99b2ed3b32d72'
+
 const groupId = ref('')
 
 // Подтягиваем ID группы из localStorage при открытии окна
